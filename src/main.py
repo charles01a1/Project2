@@ -2,6 +2,8 @@ import time
 
 import utils
 
+from shell import Shell
+
 # 0.72 GB (usual size of 291db, can be varied)
 
 # number of docs in each collection:
@@ -16,6 +18,8 @@ def main():
 
     utils.prepare_json()
     utils.load_json()
+
+    Shell().main_mennu()
 
     end = time.time()
 
