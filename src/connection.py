@@ -22,6 +22,17 @@ class Connection(metaclass=Singleton):
 
         self.__collections = {name: self.__db[name.replace(".", "_")] for name in collection_names}
 
+        
+    """
+    Return a dictionary :
+        - key : name of the collection
+        - value : collection object
+    
+    For example, 
+        - to get access of collection "name.basics", write collections["name.basics"]
+        - or to use a function call on collection "name.basics", 
+          write collections["name.basics"].function_name()
+    """
     def get_collection(self):
         return self.__collections
 
