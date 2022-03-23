@@ -1,53 +1,65 @@
-def add(args, option):
-    pass
+from user import User
 
 
-def search(args, option):
-    pass
+class Shell:
 
+    def __init__(self):
+        self.usr = User()
 
-def print_help():
-    pass
+    def add(self, args_str, option):
+        options = {
+            "-c": self.usr.add_casts,
+            "-m": self.usr.add_movie,
+        }
 
+        if option in options:
+            args = args_str.split("|")
 
-def add_help():
-    pass
+            options[option](*args)
 
+    def search(self, args_str, option):
+        options = {
+            "-c": self.usr.search_for_members,
+            "-g": self.usr.search_for_genres,
+            "-t": self.usr.search_for_titles,
+        }
 
-def search_help():
-    pass
+        if option in options:
+            args = args_str.split("|")
 
+            options[option](*args)
 
-def main_menu():
-    cmds = {
-        "add": add,
-        "search": search,
-        "help": print_help,
-    }
+    def print_help(self):
+        pass
 
-    while True:
-        try:
-            print_help()
+    def add_help(self):
+        pass
 
-            line = input("$ ").strip()
-            print()
+    def search_help(self):
+        pass
 
-            if not line: continue
+    def main_menu(self):
+        cmds = {
+            "add": self.add,
+            "search": self.search,
+            "help": self.print_help,
+        }
 
-            tokens = line.split(" ", )
+        while True:
+            try:
+                self.print_help()
 
-            if cmd in cmds:
-                func = cmds[cmd]
-                try:
-                    func(*args)
-                except TypeError:
-                    print(f"{cmd}: invalid arguments\n")
-            elif cmd == "exit" or cmd == "quit":
+                line = input("$ ").strip()
+
+                if line:
+                    cmd, rest = line.split(" ", 1)
+                    if cmd in cmds:
+                        option, args_str = line.split(" ", 1)
+                        cmds[cmd](option, args_str)
+                    elif cmd == "exit" or cmd == "quit":
+                        return
+                    else:
+                        print(f"{line}: command not found\n")
+
+            except (KeyboardInterrupt, EOFError):
                 quit(0)
-            elif cmd == "logout":
-                print("Logout successfully\n")
-                return
-            else:
-                print(f"{line}: command not found\n")
-        except (KeyboardInterrupt, EOFError):
-            quit(0)
