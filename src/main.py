@@ -19,7 +19,7 @@ def main():
     utils.prepare_json()
     utils.load_json()
 
-    Shell().main_mennu()
+    Shell().main_menu()
 
     end = time.time()
 

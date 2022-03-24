@@ -1,3 +1,5 @@
+from lib2to3.pgen2.token import MINUS
+from tkinter import N
 from connection import collections
 from pprint import pprint
 
@@ -18,8 +20,7 @@ class User():
             else:
                 strings.append(keywords[i])
 
-        regex = ' AND'.join(strings)
-
+        regex = '|'.join(strings)
         self.basics.create_index([('primaryTitle', 'text')])
 
         if (len(strings) > 0 and len(years) > 0):
@@ -68,5 +69,52 @@ class User():
         for r in movie_rating:
             pprint(r)
         print("These are the Cast Members of this movie:")
-        print(casts_list)
+        for i in casts_list:
+            print(i)
+
+
+    def search_for_genres(self,genres,minimum_vote):
+        minimum_vote = int(minimum_vote)
+        result = self.basics.aggregate([
+                {'$unwind':'$genres'},
+                {'$match':{'genres':{'$regex':genres,'$options':'i'}}},
+                {'$group':{'_id':'$tconst'}},
+                {'$project':{'tconst':'$_id',"_id":0}}
+            ]
+        )
+
+        result_list = []
+        for r in result:
+            result_list.append(r['tconst'])
+
+        new_result = self.ratings.aggregate([
+            {'$match':{'numVotes':{'$gte':minimum_vote}}},
+            {'$match':{'tconst':{'$in':result_list}}},
+            {'$sort':{'averageRating':-1}},
+            {'$project':{'tconst':'$tconst',"_id":0}}
+        ]
+        )
+
+        filtered_list = []
+        for r in new_result:
+            filtered_list.append(r['tconst'])
+
+
+        last_result = self.basics.aggregate([
+            {'$match':{'tconst':{'$in':filtered_list}}},
+            {'$project':{'Title of Movie':'$primaryTitle','_id':0}}
+        ])
+
+
+        for r in last_result:
+            print(r)
+    
+        
+
+
+user = User()
+keywords = input("what are your keywords: ").split()
+# user.search_for_titles(keywords)
+user.search_for_genres(keywords[0],keywords[1])
+
 
