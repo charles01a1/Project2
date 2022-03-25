@@ -1,5 +1,6 @@
 from lib2to3.pgen2.token import MINUS
 from tkinter import N
+from unicodedata import name
 from connection import collections
 from pprint import pprint
 
@@ -109,9 +110,61 @@ class User():
         for r in last_result:
             print(r)
     
-        
+    def search_for_member(self, name_input):
+        output = []
 
+        actorID = self.name.find(
+            {'primaryName':{'$in':name_input}},
+            {'nconst':'$nconst', '_id' :0}
+        )        
 
+        movieID = self.principals.find(
+            {'nconst':{'$in':actorID}},
+            {'tconst':'$tconst', '_id' :0}
+        )
+
+        # Start getting my outputs
+        profession = self.name.find(
+            {'primaryName':{'$in':name_input}},
+            {'primaryProfession':'$primaryProfession', '_id' :0}
+        )     
+
+        job = self.principals.find(
+            {'nconst':{'$in':actorID}},
+            {'job':'$job', '_id' :0}
+        )
+
+        if len(job) > 0:
+            # 'for each title the member had a job, the primary title, the job and character (if any). '
+            mv_title = self.title.find(
+                {'tconst':{'$in':movieID}},
+                {'primaryTitle':'$primaryTitle', '_id' :0}
+            )
+
+            characters = self.principals.find(
+                {'nconst':{'$in':actorID}},
+                {'characters':'$characters', '_id' :0}
+            )
+
+        # putting all the outputs together
+        output.append(name_input)
+
+        for prof in profession:
+            output.append(prof)
+
+        for j in job:
+            output.append(j)
+
+        if len(job) > 0:
+            output.append(mv_title)
+
+            for char in characters:
+                output.append(char)
+
+        for entry in output:
+            print(entry)
+
+            
 user = User()
 keywords = input("what are your keywords: ").split()
 # user.search_for_titles(keywords)
