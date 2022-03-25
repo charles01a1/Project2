@@ -42,13 +42,13 @@ class User():
         for r in result:
             pprint(r)
             print("\n")
-            all_movies.append(r['primaryTitle'])
+            all_movies.append(r['primaryTitle'].lower())
 
         movie = ''
-        while movie not in all_movies:
+        while movie.lower() not in all_movies:
             movie = input("select a Valid Title to get more information on: ")
 
-        tconst = self.basics.find({'primaryTitle': movie})
+        tconst = self.basics.find({'primaryTitle':{'$regex':movie,'$options':'i'}})
         tconst = list(tconst)[0]['tconst']
 
         movie_rating = self.ratings.find(
@@ -114,7 +114,7 @@ class User():
 
 user = User()
 keywords = input("what are your keywords: ").split()
-# user.search_for_titles(keywords)
-user.search_for_genres(keywords[0],keywords[1])
+user.search_for_titles(keywords)
+# user.search_for_genres(keywords[0],keywords[1])
 
 
