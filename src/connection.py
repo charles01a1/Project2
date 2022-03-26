@@ -1,10 +1,4 @@
-from pymongo.mongo_client import MongoClient
-
-from config import *
-
-
 class Singleton(type):
-
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -17,6 +11,10 @@ class Singleton(type):
 class Connection(metaclass=Singleton):
 
     def __init__(self):
+        from pymongo.mongo_client import MongoClient
+
+        from config import connection_string, collection_names, dbname
+
         self.__client = MongoClient(connection_string)
         self.__db = self.__client[dbname]
 
