@@ -1,29 +1,6 @@
-from pymongo import InsertOne
-from pymongo.errors import BulkWriteError
-
+import datetime
 import json
-
-from config import collection_names
-
-
-def insert_documents(lines, collection):
-    requests = [InsertOne(json.loads(line)) for line in lines]
-    try:
-        collection.bulk_write(requests, ordered=False)
-    except BulkWriteError as bwe:
-        print(bwe.details)
-
-
-def load_json():
-    from connection import collections
-
-    for name, collection in collections.items():
-        collection.delete_many({})
-        with open(f"{name}.json") as f:
-            lines = f.readlines(1024)
-            while lines:
-                insert_documents(lines, collection)
-                lines = f.readlines(1024)
+import re
 
 
 def tsv2json(input_file, output_file):
@@ -46,6 +23,9 @@ def tsv2json(input_file, output_file):
                     d[title] = None
                 elif value.isdecimal():
                     d[title] = int(value.strip())
+                elif title == "characters":
+                    value = re.sub(r"[\[\]\"]", "", value)
+                    d[title] = [v for v in value.split(",")]
                 else:
                     d[title] = [v.strip() for v in value.split(",")] if title in nested else value.strip()
 
@@ -53,9 +33,19 @@ def tsv2json(input_file, output_file):
             fout.write("\n")
 
 
-def prepare_json():
-    input_files = [name + ".tsv" for name in collection_names]
-    output_files = [name + ".json" for name in collection_names]
+def is_valid_int(num):
+    return num.isdigit() and int(num) > 0
 
-    for i, o in zip(input_files, output_files):
-        tsv2json(i, o)
+
+def is_valid_year(year):
+    return year.isdigit() and datetime.MINYEAR <= int(year) <= datetime.datetime.today().year
+
+
+def validate_data(assertion_pairs):
+    try:
+        for f, msg in assertion_pairs.item():
+            assert f, msg
+        return True
+    except AssertionError as error:
+        print(error)
+        return False
