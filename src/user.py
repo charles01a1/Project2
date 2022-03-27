@@ -184,56 +184,6 @@ class User():
 
 
 
-        # print(new_list)
-
-
-        # movieID = list(self.principals.find(
-        #     {'nconst':{'$in':actorID}},
-        #     {'tconst':'$tconst', '_id' :0}
-        # ))
-
-
-        # # Start getting my outputs
-        # profession = list(self.name.find(
-        #     {'primaryName':{'$in':name_input}},
-        #     {'primaryProfession':'$primaryProfession', '_id' :0}
-        # )     )
-
-        # job = list(self.principals.find(
-        #     {'nconst':{'$in':actorID}},
-        #     {'job':'$job', '_id' :0}
-        # ))
-
-        # if len(job) > 0:
-        #     # 'for each title the member had a job, the primary title, the job and character (if any). '
-        #     mv_title = self.title.find(
-        #         {'tconst':{'$in':movieID}},
-        #         {'primaryTitle':'$primaryTitle', '_id' :0}
-        #     )
-
-        #     characters = self.principals.find(
-        #         {'nconst':{'$in':actorID}},
-        #         {'characters':'$characters', '_id' :0}
-        #     )
-
-        # # putting all the outputs together
-        # output.append(name_input)
-
-        # for prof in profession:
-        #     output.append(prof)
-
-        # for j in job:
-        #     output.append(j)
-
-        # if len(job) > 0:
-        #     output.append(mv_title)
-
-        #     for char in characters:
-        #         output.append(char)
-
-        # for entry in output:
-        #     print(entry)
-       
 
 
 user = User()
