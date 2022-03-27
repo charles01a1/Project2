@@ -2,7 +2,7 @@ from lib2to3.pgen2.token import MINUS
 from tkinter import N
 from unicodedata import category
 from connection import collections
-from pprint import pprint
+from pprint import pp, pprint
 
 
 class User():
@@ -142,12 +142,104 @@ class User():
                     break
 
         
+    def search_for_member(self, name_input):
+        output = []
+
+        actorID = self.name.aggregate([
+            {'$unwind':'$primaryProfession'},
+            {'$match':{'primaryName':{'$regex': '^' + name_input + '$','$options':'i'}}},
+            {'$group':{'_id':'$nconst',
+                'primaryProfession':{'$addToSet':'$primaryProfession'},
+                'primaryName':{'$first':'$primaryName'}
+            }},
+            {'$project':{'_id':'$_id','primaryProfession':'$primaryProfession','primaryName':'$primaryName'}}
+        ])
+
         
+        for r in actorID:
+            print("\nHere is the Info for a cast that matches your description")
+            new_result = self.principals.aggregate([
+                {'$match':{'nconst':r['_id']}},
+                {'$match':{'job':{'$ne':'null'}}},
+                {'$lookup':{
+                    'from': 'title_basics',
+                    'localField' : 'tconst',
+                    'foreignField' : 'tconst',
+                    'as' : 'titles'
+                }},
+                {'$unwind':'$titles'},
+                {'$project':{'Name':'$titles.primaryTitle','job':'$job','characters':'$characters'}}
+            ])
+            
+            print("Name: ",r['primaryName'] ,'|','Profession(s): ',','.join(r['primaryProfession']),'\n')
+
+            print("Here are their Movies, their jobs and the characters they played")
+            for i in new_result:
+                if i['characters'] == None:
+                    print(i['Name'],'|',i['job'],'|',"No Characterss")
+                else:
+                    print(i['Name'],'|',i['job'],'|',",".join(i['characters']))
+            
+            print()
+
+
+
+        # print(new_list)
+
+
+        # movieID = list(self.principals.find(
+        #     {'nconst':{'$in':actorID}},
+        #     {'tconst':'$tconst', '_id' :0}
+        # ))
+
+
+        # # Start getting my outputs
+        # profession = list(self.name.find(
+        #     {'primaryName':{'$in':name_input}},
+        #     {'primaryProfession':'$primaryProfession', '_id' :0}
+        # )     )
+
+        # job = list(self.principals.find(
+        #     {'nconst':{'$in':actorID}},
+        #     {'job':'$job', '_id' :0}
+        # ))
+
+        # if len(job) > 0:
+        #     # 'for each title the member had a job, the primary title, the job and character (if any). '
+        #     mv_title = self.title.find(
+        #         {'tconst':{'$in':movieID}},
+        #         {'primaryTitle':'$primaryTitle', '_id' :0}
+        #     )
+
+        #     characters = self.principals.find(
+        #         {'nconst':{'$in':actorID}},
+        #         {'characters':'$characters', '_id' :0}
+        #     )
+
+        # # putting all the outputs together
+        # output.append(name_input)
+
+        # for prof in profession:
+        #     output.append(prof)
+
+        # for j in job:
+        #     output.append(j)
+
+        # if len(job) > 0:
+        #     output.append(mv_title)
+
+        #     for char in characters:
+        #         output.append(char)
+
+        # for entry in output:
+        #     print(entry)
+       
 
 
 user = User()
 keywords = input("what are your keywords: ").split()
-# user.search_for_titles(keywords)
-user.search_for_genres(keywords[0],keywords[1])
+user.search_for_titles(keywords)
+# user.search_for_genres(keywords[0],keywords[1])
+# user.search_for_member(keywords)
 
 
