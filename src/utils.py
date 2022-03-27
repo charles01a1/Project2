@@ -43,9 +43,9 @@ def is_valid_year(year):
 
 def validate_data(assertion_pairs):
     try:
-        for f, msg in assertion_pairs.item():
+        for f, msg in assertion_pairs.items():
             assert f, msg
         return True
     except AssertionError as error:
-        print(error)
+        print(f"{error}\n")
         return False
