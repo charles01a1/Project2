@@ -41,6 +41,7 @@ class User:
             }
 
             self.basics.insert_one(doc)
+            print(f"Movie {movie_id}: {title} has been added\n")
 
     def add_cast_crew(self, member_id, title_id, category):
         assertion_pairs = {
@@ -49,29 +50,50 @@ class User:
         }
 
         if validate_data(assertion_pairs):
-            member_id = f"tt{member_id}"
+            member_id = f"nm{member_id}"
             title_id = f"tt{title_id}"
 
             if not self.is_member_exists(member_id):
-                print(f"Member {member_id} does not exists")
+                print(f"Member {member_id} does not exists\n")
+                return
 
             if not self.is_movie_exists(title_id):
-                print(f"Title {title_id} does not exists")
+                print(f"Title {title_id} does not exists\n")
+                return
 
-            self.principals.find({"tconst": title_id}).sort("ordering", -1).limit(1)
+            ordering = self.get_ordering(title_id)
 
-            """
-            select MAX(ordering)
-            from title_principals
-            where tconst = title_id
-            group by tconst
-            """
+            doc = {
+                "tconst": title_id,
+                "ordering": ordering + 1,
+                "nconst": member_id,
+                "category": category,
+                "job": None,
+                "characters": None,
+            }
+
+            self.principals.insert_one(doc)
+            print(f"Member {member_id} has been associated to title {title_id} "
+                  f"with category: {category}\n")
+
+    def get_ordering(self, title_id):
+        selector = {"tconst": title_id}
+
+        result = self.principals.find(selector)
+        if result:
+            result.sort("ordering", -1).limit(1)
+
+            return result[0]["ordering"]
+
+        return 0
 
     def is_member_exists(self, member_id):
-        pass
+        selector = {"nconst": member_id}
+
+        return True if self.name.find_one(selector) else False
 
     def is_movie_exists(self, movie_id):
-        selector = {"st": movie_id}
+        selector = {"tconst": movie_id}
 
         return True if self.basics.find_one(selector) else False
 
