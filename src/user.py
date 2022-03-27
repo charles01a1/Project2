@@ -21,8 +21,7 @@ class User():
             else:
                 strings.append(keywords[i])
 
-        regex = '|'.join(strings)
-        self.basics.create_index([('primaryTitle', 'text')])
+        regex =   '"' +   '" "'.join(strings) + '"'
 
         if (len(strings) > 0 and len(years) > 0):
             result = self.basics.find(
@@ -189,8 +188,8 @@ class User():
 
 user = User()
 keywords = input("what are your keywords: ").split()
-# user.search_for_titles(keywords)
-user.search_for_genres(keywords[0],keywords[1])
+user.search_for_titles(keywords)
+# user.search_for_genres(keywords[0],keywords[1])
 # user.search_for_member(keywords)
 
 
