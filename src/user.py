@@ -155,12 +155,13 @@ class User():
             {'$project':{'_id':'$_id','primaryProfession':'$primaryProfession','primaryName':'$primaryName'}}
         ])
 
-        
+            
+
         for r in actorID:
             print("\nHere is the Info for a cast that matches your description")
             new_result = self.principals.aggregate([
                 {'$match':{'nconst':r['_id']}},
-                {'$match':{'job':{'$ne':'null'}}},
+                 {'$match':{'$or':[{'job':{'$ne':None}} , {'characters':{'$ne':None}}]}},
                 {'$lookup':{
                     'from': 'title_basics',
                     'localField' : 'tconst',
@@ -187,9 +188,9 @@ class User():
 
 
 user = User()
-keywords = input("what are your keywords: ").split()
-user.search_for_titles(keywords)
+keywords = input("what are your keywords: ")
+# user.search_for_titles(keywords)
 # user.search_for_genres(keywords[0],keywords[1])
-# user.search_for_member(keywords)
+user.search_for_member(keywords)
 
 
