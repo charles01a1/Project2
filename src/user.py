@@ -188,9 +188,9 @@ class User():
 
 
 user = User()
-keywords = input("what are your keywords: ")
+keywords = input("what are your keywords: ").split()
 # user.search_for_titles(keywords)
-# user.search_for_genres(keywords[0],keywords[1])
-user.search_for_member(keywords)
+user.search_for_genres(keywords[0],keywords[1])
+# user.search_for_member(keywords)
 
 
