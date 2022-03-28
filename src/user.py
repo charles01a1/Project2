@@ -183,6 +183,7 @@ class User:
                 strings.append(keywords[i])
 
         regex = '"' + '" "'.join(strings) + '"'
+        self.basics.create_index([('primaryTitle', 'text')])
 
         if len(strings) > 0 and len(years) > 0:
             result = self.basics.find(
