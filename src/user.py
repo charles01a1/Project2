@@ -182,16 +182,15 @@ class User:
             else:
                 strings.append(keywords[i])
 
-        regex = '|'.join(strings)
-        self.basics.create_index([('primaryTitle', 'text')])
+        regex = '"' + '" "'.join(strings) + '"'
 
-        if len(strings) > 0 and len(years) > 0:
+        if (len(strings) > 0 and len(years) > 0):
             result = self.basics.find(
+                # maybe use all for the regex
                 {'$and': [
                     {'$text': {'$search': regex}},
                     {'startYear': {'$in': years}}
                 ]}
-                #  {'$or':[{'$text':{'$search':regex}},{'startYear':{'$in':years}}]}
             )
         elif len(years) == 0:
             result = self.basics.find(
@@ -201,37 +200,56 @@ class User:
                 {'startYear': {'$in': years}})
 
         all_movies = []
-
         for r in result:
-
             pprint(r)
             print("\n")
             all_movies.append(r['primaryTitle'].lower())
 
-        movie = ''
-        while movie.lower() not in all_movies:
-            movie = input("select a Valid Title to get more information on: ")
+        if (input("Would you like to choose a specific Movie? (yes/no): ").lower() == "yes"):
+            movie = ''
+            while movie.lower() not in all_movies:
+                movie = input("select a Valid Title to get more information on: ")
 
-        tconst = self.basics.find({'primaryTitle': {'$regex': movie, '$options': 'i'}})
-        tconst = list(tconst)[0]['tconst']
+            tconsts = self.basics.aggregate([
+                {'$match': {'primaryTitle': {'$regex': '^' + movie + '$', '$options': 'i'}}},
+                {'$lookup': {
+                    'from': 'title_ratings',
+                    'localField': 'tconst',
+                    'foreignField': 'tconst',
+                    'as': 'ratings'
+                }},
+                {'$unwind': '$ratings'},
+                {'$project': {'_id': 0, 'primaryTitle': '$primaryTitle', 'tconst': '$tconst',
+                              'numVotes': '$ratings.numVotes', 'rating': '$ratings.averageRating'}}
+            ])
+            ratings = list(tconsts)[0]
+            tconst = ratings['tconst']
 
-        movie_rating = self.ratings.find(
-            {'tconst': tconst},
-            {'_id': movie, 'Ratings': '$averageRating', 'Number of Votes': '$numVotes'}
-        )
+            nconst = list(self.principals.find({'tconst': tconst}))
+            nconst_list = list(nconst)
+            for i in range(0, len(nconst_list)):
+                nconst_list[i] = nconst_list[i]['nconst']
 
-        nconst = self.principals.find({'tconst': tconst})
-        nconst_list = list(nconst)
-        for i in range(0, len(nconst_list)):
-            nconst_list[i] = nconst_list[i]['nconst']
+            for i in tconsts:
+                print(i)
 
-        casts = self.name.find({'nconst': {'$in': nconst_list}})
-        casts_list = list(casts)
-        for i in range(len(casts_list)):
-            casts_list[i] = casts_list[i]['primaryName']
+            print("\nHere is info about the Movie")
+            print("Title: " + ratings['primaryTitle'] + ' | Number of Votes:  ' + str(
+                ratings['numVotes']) + ' | Rating:  ' + str(ratings['rating']))
 
-        for r in movie_rating:
-            pprint(r)
-        print("These are the Cast Members of this movie:")
-        for i in casts_list:
-            print(i)
+            names = list(self.name.find(
+                {'nconst': {'$in': nconst_list}},
+                {'nconst': '$nconst', 'primaryName': '$primaryName'}
+            ))
+
+            print("\nHere are the names of the Cast, their Category and the name of the Character they played\n")
+            for cast in names:
+                characters_str = ""
+                for n_const in nconst:
+                    if cast['nconst'] == n_const['nconst']:
+                        if n_const['characters'] != None:
+                            length = len(n_const['characters'][0])
+                            characters_str += n_const['characters'][0][1:length - 1]
+                        else:
+                            characters_str = "None"
+                        print(cast['primaryName'] + ' | ' + n_const['category'] + ' | ' + characters_str)
