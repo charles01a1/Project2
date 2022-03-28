@@ -18,11 +18,11 @@ def main():
     build_docs.prepare_json()
     build_docs.load_json()
 
-    Shell().main_menu()
-
     end = time.time()
 
-    print(f"Runtime: {end - start}\n")
+    print(f"Time used on phase 1: {end - start}\n")
+
+    Shell().main_menu()
 
 
 if __name__ == "__main__":
