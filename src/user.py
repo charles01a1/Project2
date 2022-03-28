@@ -25,6 +25,7 @@ class User:
 
             if self.is_movie_exists(movie_id):
                 print(f"Movie {movie_id}: {title} exists\n")
+                return
 
             genres = genres_str.split(" ")
 
@@ -97,7 +98,82 @@ class User:
 
         return True if self.basics.find_one(selector) else False
 
-    def search_for_titles(self, keywords):
+    def search_for_member(self, name_input):
+        actorID = self.name.aggregate([
+            {'$unwind': '$primaryProfession'},
+            {'$match': {'primaryName': {'$regex': '^' + name_input + '$', '$options': 'i'}}},
+            {'$group': {'_id': '$nconst',
+                        'primaryProfession': {'$addToSet': '$primaryProfession'},
+                        'primaryName': {'$first': '$primaryName'}
+                        }},
+            {'$project': {'_id': '$_id', 'primaryProfession': '$primaryProfession', 'primaryName': '$primaryName'}}
+        ])
+
+        for r in actorID:
+            print("\nHere is the Info for a cast that matches your description")
+            new_result = self.principals.aggregate([
+                {'$match': {'nconst': r['_id']}},
+                {'$match': {'job': {'$ne': 'null'}}},
+                {'$lookup': {
+                    'from': 'title_basics',
+                    'localField': 'tconst',
+                    'foreignField': 'tconst',
+                    'as': 'titles'
+                }},
+                {'$unwind': '$titles'},
+                {'$project': {'Name': '$titles.primaryTitle', 'job': '$job', 'characters': '$characters'}}
+            ])
+
+            print("Name: ", r['primaryName'], '|', 'Profession(s): ', ','.join(r['primaryProfession']), '\n')
+
+            print("Here are their Movies, their jobs and the characters they played")
+            for i in new_result:
+                if not i['characters']:
+                    print(i['Name'], '|', i['job'], '|', "No Characters")
+                else:
+                    print(i['Name'], '|', i['job'], '|', ",".join(i['characters']))
+
+            print()
+
+    def search_for_genres(self, genres, minimum_vote):
+        minimum_vote = int(minimum_vote)
+        result = self.basics.aggregate([
+            {'$unwind': '$genres'},
+            {'$match': {'genres': {'$regex': '^' + genres + '$', '$options': 'i'}}},
+            {'$group': {'_id': '$tconst'}},
+            {'$project': {'tconst': '$_id', "_id": 0}}
+        ]
+        )
+
+        result_list = []
+        for r in result:
+            result_list.append(r['tconst'])
+
+        new_result = self.ratings.aggregate([
+            {'$match': {'numVotes': {'$gte': minimum_vote}}},
+            {'$match': {'tconst': {'$in': result_list}}},
+            {'$sort': {'averageRating': -1}},
+            {'$project': {'tconst': '$tconst', 'Average': '$averageRating', 'Votes': '$numVotes', "_id": 0}}
+        ]
+        )
+
+        new_result_list = list(new_result)
+        filtered_list = []
+        for r in new_result_list:
+            filtered_list.append(r['tconst'])
+
+        last_result = list(self.basics.aggregate([
+            {'$match': {'tconst': {'$in': filtered_list}}},
+            {'$project': {'tconst': '$tconst', 'Title of Movie': '$primaryTitle', '_id': 0}}
+        ]))
+        for j in range(0, len(new_result_list)):
+            for i in range(0, len(last_result)):
+                if last_result[i]['tconst'] == new_result_list[j]['tconst']:
+                    print(last_result[i]['Title of Movie'], '|', str(new_result_list[j]['Average']), '|',
+                          str(new_result_list[j]['Votes']))
+                    break
+
+    def search_for_titles(self, *keywords):
         strings = []
         years = []
         for i in range(0, len(keywords)):
@@ -125,7 +201,9 @@ class User:
                 {'startYear': {'$in': years}})
 
         all_movies = []
+
         for r in result:
+
             pprint(r)
             print("\n")
             all_movies.append(r['primaryTitle'].lower())
@@ -157,37 +235,3 @@ class User:
         print("These are the Cast Members of this movie:")
         for i in casts_list:
             print(i)
-
-    def search_for_genres(self, genres, minimum_vote):
-        minimum_vote = int(minimum_vote)
-        result = self.basics.aggregate([
-            {'$unwind': '$genres'},
-            {'$match': {'genres': {'$regex': genres, '$options': 'i'}}},
-            {'$group': {'_id': '$tconst'}},
-            {'$project': {'tconst': '$_id', "_id": 0}}
-        ]
-        )
-
-        result_list = []
-        for r in result:
-            result_list.append(r['tconst'])
-
-        new_result = self.ratings.aggregate([
-            {'$match': {'numVotes': {'$gte': minimum_vote}}},
-            {'$match': {'tconst': {'$in': result_list}}},
-            {'$sort': {'averageRating': -1}},
-            {'$project': {'tconst': '$tconst', "_id": 0}}
-        ]
-        )
-
-        filtered_list = []
-        for r in new_result:
-            filtered_list.append(r['tconst'])
-
-        last_result = self.basics.aggregate([
-            {'$match': {'tconst': {'$in': filtered_list}}},
-            {'$project': {'Title of Movie': '$primaryTitle', '_id': 0}}
-        ])
-
-        for r in last_result:
-            print(r)
