@@ -14,11 +14,16 @@ class Shell:
         if add_option in add_options_dict.keys():
             args = args_str.split("|")
 
-            add_options_dict[add_option](*args)
+            try:
+                add_options_dict[add_option](*args)
+            except ValueError:
+                print(f"add {add_option}: invalid arguments")
+        else:
+            print(f"add: invalid option {add_option}")
 
     def search(self, args_str, search_option):
         search_options_dict = {
-            "-m": self.usr.search_for_members,
+            "-m": self.usr.search_for_member,
             "-g": self.usr.search_for_genres,
             "-t": self.usr.search_for_titles,
         }
@@ -26,7 +31,12 @@ class Shell:
         if search_option in search_options_dict.keys():
             args = args_str.split("|")
 
-            search_options_dict[search_option](*args)
+            try:
+                search_options_dict[search_option](*args)
+            except ValueError:
+                print(f"add {search_option}: invalid arguments")
+        else:
+            print(f"search: invalid option {search_option}")
 
     def print_help(self):
         self.add_help()
@@ -34,33 +44,47 @@ class Shell:
 
     def add_help(self):
         print("add usage:\n"
-              "add|[-c]|[member_id]|[title_id]|[category]\n"
-              "add|[-m]|[title_id]|[title]|[start_year]|[runtime]|[list_of_genres]\n")
+              "add a cast/crew member\t"
+                    "add|[-c]|[member_id]|[title_id]|[category]\n"
+              "add a movie\t"
+                    "add|[-m]|[title_id]|[title]|[start_year]|[runtime]|[list_of_genres]\n")
 
     def search_help(self):
         print("search usage:\n"
-              "search|[-g]|[genre]|[minimum_vote_count]\n"
-              "search|[-t]|[keyword_1]|[keyword_2]|...|[keyword_n]\n"
-              "search|[")
+              "search a for genre with a minimum vote count\t"
+                    "search|[-g]|[genre]|[minimum_vote_count]\n"
+              "search for a cast/crew member\t"
+                    "search|[-m]|[case/crew_member_name]\n"
+              "search for titles with a list of keywords\t"
+                    "search|[-t]|[keyword_1]|[keyword_2]|...|[keyword_n]\n")
 
     def main_menu(self):
         cmds_dict = {
-            "add": self.add,
-            "search": self.search,
-            "help": self.print_help,
+            "add": (self.add, True),
+            "search": (self.search, True),
+            "help": (self.print_help, False),
         }
+
+        self.print_help()
 
         while True:
             try:
-                self.print_help()
 
                 line = input("$ ").strip()
+                print("\n")
 
                 if line:
-                    cmd_name, rest = line.split("|", 1)
+                    cmd_name = line.split("|", 1)[0]
                     if cmd_name in cmds_dict:
-                        option, args_str = rest.split("|", 1)
-                        cmds_dict[cmd_name](args_str, option)
+                        if cmds_dict[cmd_name][1]:  # commands that take in args
+                            try:
+                                rest = line.split("|", 1)[1]
+                                option, args_str = rest.split("|", 1)
+                                cmds_dict[cmd_name][0](args_str, option)
+                            except (IndexError, ValueError):  # no arguments provided
+                                print(f"{cmd_name}: require arguments")
+                        else:
+                            cmds_dict[cmd_name][0]()
                     elif cmd_name == "exit" or cmd_name == "quit":
                         return
                     else:
