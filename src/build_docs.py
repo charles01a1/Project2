@@ -19,3 +19,4 @@ def load_json():
         with open(f"{name}.json") as f:
             docs = [json.loads(line) for line in f]
             collection.insert_many(docs)
+            

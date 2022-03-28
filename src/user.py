@@ -183,6 +183,7 @@ class User:
                 strings.append(keywords[i])
 
         regex = '"' + '" "'.join(strings) + '"'
+        self.basics.create_index([('primaryTitle', 'text')])
 
         if len(strings) > 0 and len(years) > 0:
             result = self.basics.find(
@@ -249,7 +250,7 @@ class User:
                     if cast['nconst'] == n_const['nconst']:
                         if n_const['characters']:
                             length = len(n_const['characters'][0])
-                            characters_str += n_const['characters'][0][1:length - 1]
+                            characters_str += n_const['characters'][0][0:length]
                         else:
                             characters_str = "None"
                         print(cast['primaryName'] + ' | ' + n_const['category'] + ' | ' + characters_str)
