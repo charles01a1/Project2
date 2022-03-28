@@ -184,7 +184,7 @@ class User:
 
         regex = '"' + '" "'.join(strings) + '"'
 
-        if (len(strings) > 0 and len(years) > 0):
+        if len(strings) > 0 and len(years) > 0:
             result = self.basics.find(
                 # maybe use all for the regex
                 {'$and': [
@@ -205,7 +205,7 @@ class User:
             print("\n")
             all_movies.append(r['primaryTitle'].lower())
 
-        if (input("Would you like to choose a specific Movie? (yes/no): ").lower() == "yes"):
+        if input("Would you like to choose a specific Movie? (yes/no): ").lower() == "yes":
             movie = ''
             while movie.lower() not in all_movies:
                 movie = input("select a Valid Title to get more information on: ")
@@ -247,7 +247,7 @@ class User:
                 characters_str = ""
                 for n_const in nconst:
                     if cast['nconst'] == n_const['nconst']:
-                        if n_const['characters'] != None:
+                        if n_const['characters']:
                             length = len(n_const['characters'][0])
                             characters_str += n_const['characters'][0][1:length - 1]
                         else:

@@ -15,8 +15,8 @@ def main():
 
     start = time.time()
 
-    build_docs.prepare_json()
-    build_docs.load_json()
+    # build_docs.prepare_json()
+    # build_docs.load_json()
 
     end = time.time()
 
