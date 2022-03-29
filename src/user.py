@@ -249,8 +249,8 @@ class User:
                 for n_const in nconst:
                     if cast['nconst'] == n_const['nconst']:
                         if n_const['characters']:
-                            length = len(n_const['characters'][0])
-                            characters_str += n_const['characters'][0][1:length - 1]
+                            length = len(str(n_const['characters']))
+                            characters_str += str(n_const['characters'])[1:length-1]
                         else:
                             characters_str = "None"
                         print(cast['primaryName'] + ' | ' + n_const['category'] + ' | ' + characters_str)
