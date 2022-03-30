@@ -8,19 +8,7 @@
 
 
 def main():
-    import time
-
-    import build_docs
     from shell import Shell
-
-    start = time.time()
-
-    build_docs.prepare_json()
-    build_docs.load_json()
-
-    end = time.time()
-
-    print(f"Time used on phase 1: {end - start}\n")
 
     Shell().main_menu()
 
