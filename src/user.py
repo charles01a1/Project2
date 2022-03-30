@@ -1,4 +1,5 @@
 from pprint import pprint
+import string
 
 from utils import *
 
@@ -113,7 +114,7 @@ class User:
             print("\nHere is the Info for a cast that matches your description")
             new_result = self.principals.aggregate([
                 {'$match': {'nconst': r['_id']}},
-                {'$match': {'job': {'$ne': 'null'}}},
+                {'$match':{'$or':[{'job':{'$ne':None}} , {'characters':{'$ne':None}}]}},
                 {'$lookup': {
                     'from': 'title_basics',
                     'localField': 'tconst',
@@ -178,10 +179,9 @@ class User:
         years = [int(year) for year in years.split(";")] if years else []
         
         for keyword in keywords.split(";"):
-            if keyword.isdigit() and is_valid_year(keyword):
-                years.append(int(keyword))
-            else:
+            if keywords != "":
                 strings.append(keyword)
+
 
         regex = '"' + '" "'.join(strings) + '"'
         self.basics.create_index([('primaryTitle', 'text')])
