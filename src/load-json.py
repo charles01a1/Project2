@@ -17,5 +17,5 @@ def load_json():
     print(f"Runtime: {end - start}\n")
     
 
-if __name__ == "__name__":
+if __name__ == "__main__":
     load_json()
