@@ -173,14 +173,15 @@ class User:
                           str(new_result_list[j]['Votes']))
                     break
 
-    def search_for_titles(self, *keywords):
+    def search_for_titles(self, keywords, years=None):
         strings = []
-        years = []
-        for i in range(0, len(keywords)):
-            if keywords[i].isdigit():
-                years.append(int(keywords[i]))
+        years = [int(year) for year in years.split(";")] if years else []
+        
+        for keyword in keywords.split(";"):
+            if keyword.isdigit() and is_valid_year(keyword):
+                years.append(int(keyword))
             else:
-                strings.append(keywords[i])
+                strings.append(keyword)
 
         regex = '"' + '" "'.join(strings) + '"'
         self.basics.create_index([('primaryTitle', 'text')])
