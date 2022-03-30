@@ -56,7 +56,7 @@ class Shell:
               "search for a cast/crew member\t"
                     "search|[-m]|[case/crew_member_name]\n"
               "search for titles with a list of keywords\t"
-                    "search|[-t]|[keyword_1]|[keyword_2]|...|[keyword_n]\n")
+                    "search|[-t]|[keyword_1];[keyword_2];...;[keyword_n]|<year_1>;<year_2>;...;<year_n>\n")
 
     def main_menu(self):
         cmds_dict = {
