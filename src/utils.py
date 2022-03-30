@@ -6,6 +6,9 @@ import re
 def tsv2json(input_file, output_file):
     nested = ["primaryProfession", "knownForTitles", "genres", "characters"]
 
+    digitField = ["birthYear", "deathYear", "startYear", "endYear", "runtimeMinutes", "ordering", "numVotes"]
+    doubleField = ["averageRating"]
+
     with open(input_file, "r") as fin, open(output_file, "w", encoding="utf-8") as fout:
         line = fin.readline()
 
@@ -21,13 +24,16 @@ def tsv2json(input_file, output_file):
 
                 if value == "\\N":
                     d[title] = None
-                elif value.isdecimal():
-                    d[title] = int(value.strip())
+                elif title in digitField:
+                    d[title] = int(value)
+                elif title in doubleField:
+                    d[title] = float(value)
                 elif title == "characters":
                     value = re.sub(r"[\[\]\"]", "", value)
                     d[title] = [v for v in value.split(",")]
                 else:
                     d[title] = [v.strip() for v in value.split(",")] if title in nested else value.strip()
+
 
             fout.write(json.dumps(d))
             fout.write("\n")
